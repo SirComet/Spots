@@ -1,46 +1,28 @@
 import UIKit
 
-/// A boilerplate cell for ListComponent
-///
-/// Accessibility: This class is per default an accessibility element, and gets its attributes
-/// from any `Item` that it's configured with. You can override this behavior at any point, and
-/// disable accessibility by setting `isAccessibilityElement = false` on the cell.
-open class DefaultItemView: UITableViewCell, ItemConfigurable {
-
+public class DefaultItemViewPresenter: ViewPresenter, ItemConfigurable {
   /// An optional reference to the current item
-  open var item: Item?
+  public var item: Item?
 
-  /// Initializes a table cell with a style and a reuse identifier and returns it to the caller.
-  ///
-  /// - parameter style:           A constant indicating a cell style. See UITableViewCellStyle for descriptions of these constants.
-  /// - parameter reuseIdentifier: A string used to identify the cell object if it is to be reused for drawing multiple rows of a table view.
-  ///
-  /// - returns: An initialized UITableViewCell object or nil if the object could not be created.
-  public override init(style: UITableViewCellStyle, reuseIdentifier: String!) {
-    super.init(style: .subtitle, reuseIdentifier: reuseIdentifier)
-    isAccessibilityElement = true
-  }
+  lazy var view: DefaultItemView = DefaultItemView()
 
-  /// Init with coder
-  ///
-  /// - parameter aDecoder: An NSCoder
-  public required init?(coder aDecoder: NSCoder) {
-    fatalError("init(coder:) has not been implemented")
+  public var presentedView: View {
+    return view
   }
 
   /// Configure cell with Item struct
   ///
   /// - parameter item: The Item struct that is used for configuring the view.
-  open func configure(with item: Item) {
+  public func configure(with item: Item) {
     if let action = item.action, !action.isEmpty {
-      accessoryType = .disclosureIndicator
+      view.accessoryType = .disclosureIndicator
     } else {
-      accessoryType = .none
+      view.accessoryType = .none
     }
 
-    detailTextLabel?.text = item.subtitle
-    textLabel?.text = item.title
-    imageView?.image = UIImage(named: item.image)
+    view.detailTextLabel?.text = item.subtitle
+    view.textLabel?.text = item.title
+    view.imageView?.image = UIImage(named: item.image)
 
     self.item = item
 
@@ -57,11 +39,36 @@ open class DefaultItemView: UITableViewCell, ItemConfigurable {
   }
 
   private func assignAccesibilityAttributes(from item: Item) {
-    guard isAccessibilityElement else {
+    guard view.isAccessibilityElement else {
       return
     }
 
-    accessibilityIdentifier = item.title
-    accessibilityLabel = item.title + "." + item.subtitle
+    view.accessibilityIdentifier = item.title
+    view.accessibilityLabel = item.title + "." + item.subtitle
+  }
+}
+
+/// A boilerplate cell for ListComponent
+///
+/// Accessibility: This class is per default an accessibility element, and gets its attributes
+/// from any `Item` that it's configured with. You can override this behavior at any point, and
+/// disable accessibility by setting `isAccessibilityElement = false` on the cell.
+open class DefaultItemView: UITableViewCell {
+  /// Initializes a table cell with a style and a reuse identifier and returns it to the caller.
+  ///
+  /// - parameter style:           A constant indicating a cell style. See UITableViewCellStyle for descriptions of these constants.
+  /// - parameter reuseIdentifier: A string used to identify the cell object if it is to be reused for drawing multiple rows of a table view.
+  ///
+  /// - returns: An initialized UITableViewCell object or nil if the object could not be created.
+  public override init(style: UITableViewCellStyle, reuseIdentifier: String!) {
+    super.init(style: .subtitle, reuseIdentifier: reuseIdentifier)
+    isAccessibilityElement = true
+  }
+
+  /// Init with coder
+  ///
+  /// - parameter aDecoder: An NSCoder
+  public required init?(coder aDecoder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
   }
 }

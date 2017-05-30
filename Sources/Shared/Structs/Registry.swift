@@ -6,26 +6,42 @@ import Foundation
   import CoreGraphics
 #endif
 
+public protocol ViewPresenter {
+  var presentedView: View { get }
+}
+
+public class NibPresenter: ViewPresenter {
+  public let nib: Nib
+  public let presentedView: View
+
+  init(nib: Nib) {
+    self.nib = nib
+    #if os(OSX)
+      var views: NSArray?
+      if nib.instantiate(withOwner: nil, topLevelObjects: &views!) {
+        self.presentedView = views?.filter({ $0 is NSTableRowView }).first as? View ?? View()
+      }
+    #else
+      self.presentedView = nib.instantiate(withOwner: nil, options: nil).first as? View ?? View()
+    #endif
+  }
+}
+
 /// A registry that is used internally when resolving kind to the corresponding component.
 public struct Registry {
 
-  public enum Item {
-    case classType(View.Type)
-    case nib(Nib)
-  }
-
   /// A Key-value dictionary of registred types
-  var storage = [String: Item]()
+  var storage = [String: ViewPresenter]()
 
   /// The default item for the registry
-  var defaultItem: Item? {
+  var defaultItem: ViewPresenter? {
     didSet {
       storage[defaultIdentifier] = defaultItem
     }
   }
 
   /// A composite item
-  var composite: Item? {
+  var composite: ViewPresenter? {
     didSet {
       storage[CompositeComponent.identifier] = composite
     }
@@ -44,7 +60,7 @@ public struct Registry {
   /// - parameter key: A StringConvertable identifier
   ///
   /// - returns: An optional Nib
-  public subscript(key: StringConvertible) -> Item? {
+  public subscript(key: StringConvertible) -> ViewPresenter? {
     get {
       return storage[key.string]
     }
@@ -78,7 +94,14 @@ public struct Registry {
     var view: View? = nil
 
     switch item {
-    case .classType(let classType):
+    case let presenter as NibPresenter:
+      registryType = .nib
+      let cacheIdentifier: String = "\(registryType.rawValue)-\(identifier)"
+      if let view = cache.object(forKey: cacheIdentifier as NSString) {
+        return (type: registryType, view: view)
+      }
+      view = presenter.presentedView
+    default:
       registryType = .regular
 
       if useCache {
@@ -89,21 +112,8 @@ public struct Registry {
         }
       }
 
-      view = classType.init(frame: parentFrame)
-    case .nib(let nib):
-      registryType = .nib
-      let cacheIdentifier: String = "\(registryType.rawValue)-\(identifier)"
-      if let view = cache.object(forKey: cacheIdentifier as NSString) {
-        return (type: registryType, view: view)
-      }
-      #if os(OSX)
-        var views: NSArray?
-        if nib.instantiate(withOwner: nil, topLevelObjects: &views!) {
-          view = views?.filter({ $0 is NSTableRowView }).first as? View
-        }
-      #else
-      view = nib.instantiate(withOwner: nil, options: nil).first as? View
-      #endif
+      view = item.presentedView
+      view?.frame = parentFrame
     }
 
     if let view = view, useCache {

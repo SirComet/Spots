@@ -1,5 +1,9 @@
 import UIKit
 
+class ListWrapperPresenter: ViewPresenter {
+  lazy var presentedView: View = ListWrapper()
+}
+
 public class ListWrapper: UITableViewCell, Wrappable, Cell {
 
   weak public var wrappedView: View?

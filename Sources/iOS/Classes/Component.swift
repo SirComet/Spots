@@ -108,7 +108,7 @@ public class Component: NSObject, ComponentHorizontallyScrollable {
       self.model.layout = Component.layout
     }
 
-    registerDefaultIfNeeded(view: DefaultItemView.self)
+    registerDefaultIfNeeded(viewPresenter: DefaultItemViewPresenter())
 
     userInterface?.register()
 
@@ -264,12 +264,12 @@ public class Component: NSObject, ComponentHorizontallyScrollable {
   /// Register a default item as fallback, only if it is not already defined.
   ///
   /// - Parameter view: The view that should be registred as the default view.
-  func registerDefaultIfNeeded(view: View.Type) {
+  func registerDefaultIfNeeded(viewPresenter: ViewPresenter) {
     guard Configuration.views.defaultItem == nil else {
       return
     }
 
-    Configuration.views.defaultItem = Registry.Item.classType(view)
+    Configuration.views.defaultItem = viewPresenter
   }
 
   /// Configure the page control for the component.

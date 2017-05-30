@@ -1,5 +1,9 @@
 import UIKit
 
+class GridWrapperPresenter: ViewPresenter {
+  lazy var presentedView: View = GridWrapper()
+}
+
 public class GridWrapper: UICollectionViewCell, Wrappable, Cell {
 
   weak public var wrappedView: View?

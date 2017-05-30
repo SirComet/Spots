@@ -7,7 +7,7 @@ extension UICollectionView: UserInterface {
   }
 
   public func register() {
-    Configuration.register(view: GridWrapper.self, identifier: CollectionView.compositeIdentifier)
+    Configuration.register(presenter: GridWrapperPresenter(), identifier: CollectionView.compositeIdentifier)
     register(GridWrapper.self, forCellWithReuseIdentifier: CollectionView.compositeIdentifier)
 
     for (identifier, item) in Configuration.views.storage {
@@ -16,7 +16,9 @@ extension UICollectionView: UserInterface {
       }
 
       switch item {
-      case .classType(_):
+      case let presenter as NibPresenter:
+        register(presenter.nib, forCellWithReuseIdentifier: identifier)
+      default:
         register(GridHeaderFooterWrapper.self,
                  forSupplementaryViewOfKind: UICollectionElementKindSectionHeader,
                  withReuseIdentifier: identifier)
@@ -27,8 +29,6 @@ extension UICollectionView: UserInterface {
                  forCellWithReuseIdentifier: identifier)
         register(GridWrapper.self,
                  forCellWithReuseIdentifier: Configuration.views.defaultIdentifier)
-      case .nib(let nib):
-        register(nib, forCellWithReuseIdentifier: identifier)
       }
     }
   }

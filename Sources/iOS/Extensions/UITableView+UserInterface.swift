@@ -7,7 +7,7 @@ extension UITableView: UserInterface {
   }
 
   public func register() {
-    Configuration.register(view: ListWrapper.self, identifier: TableView.compositeIdentifier)
+    Configuration.register(presenter: ListWrapperPresenter(), identifier: TableView.compositeIdentifier)
     register(ListWrapper.self, forCellReuseIdentifier: TableView.compositeIdentifier)
 
     for (identifier, item) in Configuration.views.storage {
@@ -16,12 +16,12 @@ extension UITableView: UserInterface {
       }
 
       switch item {
-      case .classType(_):
+      case let presenter as NibPresenter:
+        register(presenter.nib, forCellReuseIdentifier: identifier)
+      default:
         register(ListHeaderFooterWrapper.self, forHeaderFooterViewReuseIdentifier: identifier)
         register(ListWrapper.self, forCellReuseIdentifier: Configuration.views.defaultIdentifier)
         register(ListWrapper.self, forCellReuseIdentifier: identifier)
-      case .nib(let nib):
-        register(nib, forCellReuseIdentifier: identifier)
       }
     }
   }
